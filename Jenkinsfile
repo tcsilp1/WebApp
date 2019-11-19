@@ -1,3 +1,4 @@
+
 node {
     // Get Artifactory server instance, defined in the Artifactory Plugin administration page.
     def server = Artifactory.server "artifactory"
@@ -24,4 +25,20 @@ node {
     stage('Publish build info') {
         server.publishBuildInfo buildInfo
     }
-}
+
+	stage('SonarQube analysis') { 
+        withSonarQubeEnv('sonar') { 
+          sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.3.0.603:sonar ' + 
+          '-f all/pom.xml ' +
+          '-Dsonar.host.url=$SONAR_HOST_URL ' +
+          '-Dsonar.login=admin ' +
+          '-Dsonar.password=password ' +
+          '-Dsonar.language=java ' +
+          '-Dsonar.sources=. ' +
+          '-Dsonar.tests=. ' +
+          '-Dsonar.test.inclusions=**/test/java/servlet/createpage_junit.java ' +
+          '-Dsonar.exclusions=**/test/java/servlet/createpage_junit.java'
+        }
+    }
+    }
+	 
